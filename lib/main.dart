@@ -135,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Column(
                     children: [
                       Container(
-                        margin: EdgeInsets.only(top : height / 6 , bottom : width / 8),
+                        margin: EdgeInsets.only(top : height / 10 , bottom : width / 10),
                         child: Text("Where to go?",
                             style: TextStyle(
                                 fontSize: width * 0.06,
@@ -145,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       Container(
                           width: width / 1.5,
+                          height: height / 9,
                           child: Align(alignment: Alignment.center,
                               child: Text("Current location",
                                   style: TextStyle(
@@ -161,32 +162,41 @@ class _MyHomePageState extends State<MyHomePage> {
                           )
                       ),
                       Container(
-                        width: width * 0.5,
+                        width: width / 1.5,
                         height:  height / 3,
                         child: Stack(
                           children: [
                             Container(
+                                padding: EdgeInsets.zero,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.black
+                                  )
+                                ),
                                 alignment: Alignment.center,
                                 child: Icon(
                                   Icons.arrow_downward,
-                                  size: width * 0.5,
+                                  size: width * 0.6
                                 )
                             ),
-                            Align(
+                            Container(
+                              padding: EdgeInsets.zero,
                               alignment: Alignment.center,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                },
-                                child: Text("Mode"),
-                                style: ElevatedButton.styleFrom(
-                                  primary: Colors.red
-                                ),
+                              child: ModeButton(
+                                width: width,
+                                height: height
+                              ),
+                              decoration: BoxDecoration(
+                               border: Border.all(
+                                 color: Colors.black
+                               )
                               )
                             )
                           ],
                         ),
                       ),
                       Container(
+                          height: height / 9,
                           width: width / 1.5,
                           child: Align(alignment: Alignment.center,
                               child: Text("Destination",
@@ -222,7 +232,134 @@ class _MyHomePageState extends State<MyHomePage> {
         )
     );
   }
+}
+
+
+class ModeButton extends StatefulWidget {
+
+  final double width;
+  final double height;
+
+  ModeButton({required this.width, required this.height});
+
+  @override
+  _ModeButtonState createState() => _ModeButtonState();
+
+}
+
+class _ModeButtonState extends State<ModeButton> {
+
+  int modeCounter = 0;
+  late final List<Widget> mode;
+
+  @override
+  void initState() {
+    mode = [
+      normal(),
+      comfort(),
+      fast(),
+      luxury()
+    ];
+    super.initState();
   }
+  
+  Widget comfort() {
+    return ElevatedButton(
+        onPressed: () {
+          setState(() {
+            if (modeCounter == 3) {
+              modeCounter = 0;
+            } else {
+              modeCounter ++;
+            }
+          });
+        },
+        child: Text("Comfort mode",
+          style: TextStyle(
+              fontSize: widget.width * 0.035
+          )
+        ),
+        style: ElevatedButton.styleFrom(
+            primary: Colors.blueAccent
+        ),
+    );
+  }
+
+  Widget fast() {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          if (modeCounter == 3) {
+            modeCounter = 0;
+          } else {
+            modeCounter ++;
+          }
+        });
+      },
+      child: Text("Fast mode",
+          style: TextStyle(
+              fontSize: widget.width * 0.035
+          )
+      ),
+      style: ElevatedButton.styleFrom(
+          primary: Colors.red
+      ),
+    );
+  }
+
+  Widget normal() {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          if (modeCounter == 3) {
+            modeCounter = 0;
+          } else {
+            modeCounter ++;
+          }
+        });
+      },
+      child: Text("Normal mode",
+          style: TextStyle(
+              fontSize: widget.width * 0.035
+          )
+      ),
+      style: ElevatedButton.styleFrom(
+          primary: Colors.green
+      ),
+    );
+  }
+
+  Widget luxury() {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          if (modeCounter == 3) {
+            modeCounter = 0;
+          } else {
+            modeCounter ++;
+          }
+        });
+      },
+      child: Text("Luxury mode",
+          style: TextStyle(
+              fontSize: widget.width * 0.035
+          )
+      ),
+      style: ElevatedButton.styleFrom(
+          primary: Colors.yellow
+      ),
+    );
+  }
+
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    return mode[modeCounter];
+  }
+
+}
 
 
 
