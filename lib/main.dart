@@ -32,97 +32,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  Widget main() {
-    final double width = MediaQuery.of(context).size.width;
-    final double height = MediaQuery.of(context).size.height;
-    return SafeArea(
-        child : Scaffold (
-            body: Center(
-                child: Container(
-                  color: Colors.grey,
-                  child: Column(
-                    children: [
-                      Container(
-                        margin: EdgeInsets.only(top : height / 6 , bottom : width / 8),
-                        child: Text("Where to go?",
-                            style: TextStyle(
-                                fontSize: width * 0.06,
-                                color: Colors.black
-                            )
-                        ),
-                      ),
-                      Container(
-                          width: width / 1.5,
-                          child: Align(alignment: Alignment.center,
-                              child: Text("Current location",
-                                  style: TextStyle(
-                                      fontSize: width * 0.05,
-                                      color: Colors.black
-                                  )
-                              )
-                          ),
-                          decoration: BoxDecoration(
-                              color: Colors.red,
-                              border: Border.all(
-                                  color: Colors.blueAccent
-                              )
-                          )
-                      ),
-                      Icon(
-                        Icons.arrow_downward,
-                        size: width * 0.5,
-                      ),
-                      Container(
-                          width: width / 1.5,
-                          child: Align(alignment: Alignment.center,
-                              child: Text("Destination",
-                                  style: TextStyle(
-                                      fontSize: width * 0.05,
-                                      color: Colors.black
-                                  )
-                              )
-                          ),
-                          decoration: BoxDecoration(
-                              color: Colors.blue,
-                              border: Border.all(
-                                  color: Colors.blueAccent
-                              )
-                          )
-                      ),
-                      ElevatedButton(
-                          onPressed: () {
-                            Map();
-                          },
-                          child: Text("GO!",
-                              style: TextStyle(
-                                  fontSize: width * 0.05,
-                                  color: Colors.black
-                              )
-                          )
-                      )
-                    ],
-                    mainAxisAlignment: MainAxisAlignment.start,
-                  ),
-                )
-            )
-        )
-    );
-  }
-
-  /*
-  Widget mode() {
-    final double width = MediaQuery.of(context).size.width;
-    final double height = MediaQuery.of(context).size.height;
-    return SafeArea(
-        child: Scaffold(
-          body: Center(
-            child: ,
-          )
-        )
-    );
-  }
-   */
-
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
@@ -141,17 +50,25 @@ class _MyHomePageState extends State<MyHomePage> {
                                 fontSize: width * 0.06,
                                 color: Colors.black
                             )
-                        ),
+                        )
                       ),
                       Container(
                           width: width / 1.5,
                           height: height / 9,
                           child: Align(alignment: Alignment.center,
-                              child: Text("Current location",
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => Map())
+                                  );
+                                },
+                                child: Text("Current location",
                                   style: TextStyle(
                                       fontSize: width * 0.05,
                                       color: Colors.black
-                                  )
+                                  ),
+                                )
                               )
                           ),
                           decoration: BoxDecoration(
@@ -167,13 +84,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Stack(
                           children: [
                             Container(
+                                alignment: Alignment.center,
                                 padding: EdgeInsets.zero,
                                 decoration: BoxDecoration(
                                   border: Border.all(
                                     color: Colors.black
                                   )
                                 ),
-                                alignment: Alignment.center,
                                 child: Icon(
                                   Icons.arrow_downward,
                                   size: width * 0.6
@@ -199,11 +116,19 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: height / 9,
                           width: width / 1.5,
                           child: Align(alignment: Alignment.center,
-                              child: Text("Destination",
-                                  style: TextStyle(
-                                      fontSize: width * 0.05,
-                                      color: Colors.black
-                                  )
+                              child: TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => Map())
+                                    );
+                                  },
+                                  child: Text("Destination",
+                                      style: TextStyle(
+                                          fontSize: width * 0.05,
+                                          color: Colors.black
+                                      )
+                                  ),
                               )
                           ),
                           decoration: BoxDecoration(
@@ -382,31 +307,15 @@ class _MapState extends State<Map> {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
-      mapController: controller,
-      options: MapOptions(
-        center: LatLng(51.5, -0.09),
-        zoom: 13.0,
-      ),
-      layers: [
-        TileLayerOptions(
-          urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          subdomains: ['a', 'b', 'c']
-        ),
-        MarkerLayerOptions(
-          markers: [
-            Marker(
-              width: 80.0,
-              height: 80.0,
-              point: LatLng(51.5, -0.09),
-              builder: (ctx) =>
-                Container(
-                  child: FlutterLogo(),
-                ),
-            ),
-          ],
+    return SafeArea(
+        child: Scaffold(
+           body: ElevatedButton(
+             onPressed: () {
+               Navigator.pop(context);
+             },
+             child: Text("Back")
+           )
         )
-      ]
     );
   }
 
