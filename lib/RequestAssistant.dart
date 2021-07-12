@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 class RequestAssistant {
@@ -17,15 +16,16 @@ class RequestAssistant {
 
       } else {
 
-        return "Failed, No Response.";
+        return "Failed";
 
       }
 
     } catch (exp) {
 
-      return "Failed.";
+      return "Failed";
 
     }
   }
 
 }
+
