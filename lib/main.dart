@@ -67,23 +67,26 @@ class MyHomePageState extends State<MyHomePage> {
                           width: width / 1.5,
                           height: height / 9,
                           child: Align(alignment: Alignment.center,
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) =>
-                                          Map(
-                                              callback: rebuild,
-                                              locationController: currController,
-                                          )
-                                      )
-                                  );
-                                },
-                                child: Text(currController.text,
-                                  style: TextStyle(
-                                      fontSize: width * 0.05,
-                                      color: Colors.black
-                                  ),
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child :TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) =>
+                                            Map(
+                                                callback: rebuild,
+                                                locationController: currController,
+                                            )
+                                        )
+                                    );
+                                  },
+                                  child: Text(currController.text,
+                                    style: TextStyle(
+                                        fontSize: width * 0.04,
+                                        color: Colors.black
+                                    ),
+                                  )
                                 )
                               )
                           ),
@@ -132,24 +135,27 @@ class MyHomePageState extends State<MyHomePage> {
                           height: height / 9,
                           width: width / 1.5,
                           child: Align(alignment: Alignment.center,
-                              child: TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) =>
-                                            Map(
-                                              callback: rebuild,
-                                              locationController: destController
-                                            )
+                              child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child : TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) =>
+                                              Map(
+                                                callback: rebuild,
+                                                locationController: destController
+                                              )
+                                          )
+                                      );
+                                    },
+                                    child: Text(destController.text,
+                                        style: TextStyle(
+                                            fontSize: width * 0.04,
+                                            color: Colors.black
                                         )
-                                    );
-                                  },
-                                  child: Text(destController.text,
-                                      style: TextStyle(
-                                          fontSize: width * 0.05,
-                                          color: Colors.black
-                                      )
-                                  ),
+                                    ),
+                                )
                               )
                           ),
                           decoration: BoxDecoration(
