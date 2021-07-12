@@ -1,7 +1,8 @@
 
-import "package:latlong2/latlong.dart";
+import 'dart:async';
+
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 
 void main() {
   runApp(MyApp());
@@ -297,25 +298,39 @@ class Map extends StatefulWidget {
 
 class _MapState extends State<Map> {
 
-  late MapController controller;
-
-  @override
-  void initState() {
-    controller = MapController();
-    super.initState();
-  }
+  Completer<GoogleMapController> _controller = Completer();
+  List<Marker> markers = [];
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
-           body: ElevatedButton(
-             onPressed: () {
-               Navigator.pop(context);
-             },
-             child: Text("Back")
+    return Scaffold(
+           body: Stack(
+             children: [
+               GoogleMap(
+                 mapType: MapType.normal,
+                 initialCameraPosition: CameraPosition(
+                   target: LatLng(13.7650836, 100.5379664),
+                   zoom: 16,
+                 ),
+                 markers: Set.from(markers),
+                 onMapCreated: (GoogleMapController controller) {
+                   _controller.complete(controller);
+                 },
+                 onTap: (LatLng tappedPos) {
+                   setState(() {
+                     markers = [];
+                     markers.add(
+                         Marker(
+                          markerId: MarkerId(tappedPos.toString()),
+                          position: tappedPos
+                        )
+                     );
+                   });
+                 },
+
+               )
+             ],
            )
-        )
     );
   }
 
