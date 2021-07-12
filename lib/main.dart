@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:time_constraint/AssistantMethods.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,10 +29,19 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MyHomePageState extends State<MyHomePage> {
+
+  TextEditingController currController = TextEditingController(text: "Current Location");
+  TextEditingController destController = TextEditingController(text: "Destination");
+
+  void rebuild() {
+    setState(() {
+
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +71,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                 onPressed: () {
                                   Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => Map())
+                                      MaterialPageRoute(builder: (context) =>
+                                          Map(
+                                              callback: rebuild,
+                                              locationController: currController,
+                                          )
+                                      )
                                   );
                                 },
-                                child: Text("Current location",
+                                child: Text(currController.text,
                                   style: TextStyle(
                                       fontSize: width * 0.05,
                                       color: Colors.black
@@ -121,10 +136,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                   onPressed: () {
                                     Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => Map())
+                                        MaterialPageRoute(builder: (context) =>
+                                            Map(
+                                              callback: rebuild,
+                                              locationController: destController
+                                            )
+                                        )
                                     );
                                   },
-                                  child: Text("Destination",
+                                  child: Text(destController.text,
                                       style: TextStyle(
                                           fontSize: width * 0.05,
                                           color: Colors.black
@@ -141,7 +161,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       ElevatedButton(
                           onPressed: () {
-                            Map();
                           },
                           child: Text("GO!",
                               style: TextStyle(
@@ -291,12 +310,19 @@ class _ModeButtonState extends State<ModeButton> {
 
 class Map extends StatefulWidget {
 
+  final callback;
+  final locationController;
+
+  Map({required void callback(), required TextEditingController this.locationController}) :
+        callback = callback;
+
   @override
-  State<Map> createState() => _MapState();
+  State<Map> createState() => MapState();
+
 
 }
 
-class _MapState extends State<Map> {
+class MapState extends State<Map> {
 
   Completer<GoogleMapController> _controller = Completer();
   List<Marker> markers = [];
@@ -327,7 +353,18 @@ class _MapState extends State<Map> {
                      );
                    });
                  },
-
+               ),
+               SafeArea(
+                   child: Positioned(
+                     child: ElevatedButton(
+                       onPressed: () async {
+                           widget.locationController.text = await AssistantMethods.getLocationName(markers[0].position);
+                           Navigator.pop(context);
+                           widget.callback();
+                       },
+                       child: Text("Done"),
+                     )
+                  )
                )
              ],
            )
