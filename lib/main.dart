@@ -18,28 +18,30 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Time Constraint'),
+      home: Main(title: 'Time Constrain'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+class Main extends StatefulWidget {
+  Main({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  MyHomePageState createState() => MyHomePageState();
+  MainState createState() => MainState();
 }
 
-class MyHomePageState extends State<MyHomePage> {
+class MainState extends State<Main> {
 
   TextEditingController currController = TextEditingController(text: "Current Location");
   TextEditingController destController = TextEditingController(text: "Destination");
+  late LatLng curr;
+  late LatLng dest;
 
-  void rebuild() {
+  void setLocationName(TextEditingController controller, String value) {
     setState(() {
-
+      controller.text = value;
     });
   }
 
@@ -51,7 +53,7 @@ class MyHomePageState extends State<MyHomePage> {
         child : Scaffold (
             body: Center(
                 child: Container(
-                  color: Colors.grey,
+                  color: Colors.white,
                   child: Column(
                     children: [
                       Container(
@@ -70,12 +72,12 @@ class MyHomePageState extends State<MyHomePage> {
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child :TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
+                                  onPressed: () async {
+                                    curr = await Navigator.push(
                                         context,
                                         MaterialPageRoute(builder: (context) =>
                                             Map(
-                                                callback: rebuild,
+                                                positionCallBack: setLocationName,
                                                 locationController: currController,
                                             )
                                         )
@@ -138,13 +140,13 @@ class MyHomePageState extends State<MyHomePage> {
                               child: SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child : TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
+                                    onPressed: () async {
+                                      dest = await Navigator.push(
                                           context,
                                           MaterialPageRoute(builder: (context) =>
                                               Map(
-                                                callback: rebuild,
-                                                locationController: destController
+                                                positionCallBack: setLocationName,
+                                                locationController: destController,
                                               )
                                           )
                                       );
@@ -167,6 +169,8 @@ class MyHomePageState extends State<MyHomePage> {
                       ),
                       ElevatedButton(
                           onPressed: () {
+                            print(curr);
+                            print(dest);
                           },
                           child: Text("GO!",
                               style: TextStyle(
@@ -316,11 +320,14 @@ class _ModeButtonState extends State<ModeButton> {
 
 class Map extends StatefulWidget {
 
-  final callback;
-  final locationController;
+  final Function(TextEditingController, String) callback;
+  final TextEditingController locationController;
 
-  Map({required void callback(), required TextEditingController this.locationController}) :
-        callback = callback;
+  Map({required positionCallBack, required locationController}) :
+      this.locationController = locationController,
+      this.callback = positionCallBack;
+
+
 
   @override
   State<Map> createState() => MapState();
@@ -338,54 +345,58 @@ class MapState extends State<Map> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
-           body: Stack(
-             children: [
-               GoogleMap(
-                 mapType: MapType.normal,
-                 initialCameraPosition: CameraPosition(
-                   target: LatLng(13.7650836, 100.5379664),
-                   zoom: 16,
-                 ),
-                 markers: Set.from(markers),
-                 onMapCreated: (GoogleMapController controller) {
-                   _controller.complete(controller);
-                 },
-                 onTap: (LatLng tappedPos) {
-                   setState(() {
-                     markers = [];
-                     markers.add(
-                         Marker(
+        body: Stack(
+          children: [
+              GoogleMap(
+                zoomGesturesEnabled: true,
+                tiltGesturesEnabled: true,
+                mapType: MapType.normal,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(13.7650836, 100.5379664),
+                  zoom: 16,
+                ),
+                markers: Set.from(markers),
+                onMapCreated: (GoogleMapController controller) {
+                  _controller.complete(controller);
+                },
+                onTap: (LatLng tappedPos) {
+                  setState(() {
+                    markers = [];
+                    markers.add(
+                        Marker(
                           markerId: MarkerId(tappedPos.toString()),
                           position: tappedPos
                         )
-                     );
-                   });
-                 },
-               ),
-                Positioned(
-                    bottom: 0,
-                    top: height * 0.75,
-                    child: Container(
-                      width: width,
-                      height: height / 4,
-                      alignment: Alignment.bottomCenter,
-                      color: Colors.white,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          widget.locationController.text = await AssistantMethods.getLocationName(markers[0].position);
-                          Navigator.pop(context);
-                          widget.callback();
-                        },
-                        child: Text("Done",
-                          style: TextStyle(
-                            fontSize: width * 0.04,
-                          ),
+                    );
+                  });
+                },
+              ),
+              Positioned(
+                  bottom: 0,
+                  top: height * 0.75,
+                  child: Container(
+                    width: width,
+                    height: height / 4,
+                    alignment: Alignment.bottomCenter,
+                    color: Colors.white,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        //second arg returns a result
+                        LatLng pos = markers[0].position;
+                        Navigator.pop(context, pos);
+                        widget.callback(widget.locationController, await AssistantMethods.getLocationName(pos));
+
+                      },
+                      child: Text("Done",
+                        style: TextStyle(
+                          fontSize: width * 0.04,
                         ),
-                      )
+                      ),
                     )
-                )
-             ],
-           )
+                  )
+              )
+         ],
+       )
     );
   }
 
