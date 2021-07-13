@@ -36,8 +36,8 @@ class MainState extends State<Main> {
 
   TextEditingController currController = TextEditingController(text: "Current Location");
   TextEditingController destController = TextEditingController(text: "Destination");
-  late LatLng curr;
-  late LatLng dest;
+  LatLng? curr;
+  LatLng? dest;
 
   void setLocationName(TextEditingController controller, String value) {
     setState(() {
@@ -78,6 +78,7 @@ class MainState extends State<Main> {
                                             Map(
                                                 positionCallBack: setLocationName,
                                                 locationController: currController,
+                                                initialPos: curr,
                                             )
                                         )
                                     );
@@ -128,6 +129,7 @@ class MainState extends State<Main> {
                                               Map(
                                                 positionCallBack: setLocationName,
                                                 locationController: destController,
+                                                initialPos: dest,
                                               )
                                           )
                                       );
@@ -304,10 +306,12 @@ class Map extends StatefulWidget {
 
   final Function(TextEditingController, String) callback;
   final TextEditingController locationController;
+  final LatLng? initialPosition;
 
-  Map({required positionCallBack, required locationController}) :
+  Map({required positionCallBack, required locationController, LatLng? initialPos}) :
       this.locationController = locationController,
-      this.callback = positionCallBack;
+      this.callback = positionCallBack,
+      initialPosition = initialPos;
 
 
 
@@ -321,7 +325,21 @@ class MapState extends State<Map> {
 
   Completer<GoogleMapController> _controller = Completer();
   List<Marker> markers = [];
-  
+
+  @override
+  void initState() {
+    if (widget.initialPosition != null) {
+      print("initial position");
+      markers.add(
+          Marker(
+            markerId: MarkerId(widget.initialPosition!.toString()),
+            position: widget.initialPosition!
+          )
+      );
+
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -381,10 +399,11 @@ class MapState extends State<Map> {
                         ElevatedButton(
                           onPressed: () async {
                             //second arg returns a result
-                            widget.callback(widget.locationController, await AssistantMethods.getLocationName(markers[0].position));
-                            Navigator.pop(context, markers[0].position);
-
-
+                            if (markers.isNotEmpty) {
+                              Navigator.pop(context, markers[0].position);
+                            } else {
+                              Navigator.pop(context);
+                            }
                           },
                           child: Text("Done",
                             style: TextStyle(
