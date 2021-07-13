@@ -53,7 +53,6 @@ class MainState extends State<Main> {
         child : Scaffold (
             body: Center(
                 child: Container(
-                  color: Colors.white,
                   child: Column(
                     children: [
                       Container(
@@ -86,7 +85,7 @@ class MainState extends State<Main> {
                                   child: Text(currController.text,
                                     style: TextStyle(
                                         fontSize: width * 0.04,
-                                        color: Colors.black
+                                        color: Colors.black,
                                     ),
                                   )
                                 )
@@ -95,43 +94,25 @@ class MainState extends State<Main> {
                           decoration: BoxDecoration(
                               color: Colors.red,
                               border: Border.all(
-                                  color: Colors.blueAccent
-                              )
+                                  color: Colors.blueAccent,
+                              ),
+                              borderRadius: BorderRadius.circular(10)
                           )
                       ),
                       Container(
                         width: width / 1.5,
                         height:  height / 3,
-                        child: Stack(
-                          children: [
-                            Container(
-                                alignment: Alignment.center,
-                                padding: EdgeInsets.zero,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.black
-                                  )
-                                ),
-                                child: Icon(
-                                  Icons.arrow_downward,
-                                  size: width * 0.6
-                                )
-                            ),
-                            Container(
-                              padding: EdgeInsets.zero,
-                              alignment: Alignment.center,
-                              child: ModeButton(
-                                width: width,
-                                height: height
-                              ),
-                              decoration: BoxDecoration(
-                               border: Border.all(
-                                 color: Colors.black
-                               )
-                              )
-                            )
-                          ],
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.zero,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.black
+                          )
                         ),
+                        child: Icon(
+                          Icons.arrow_downward,
+                          size: width * 0.6
+                        )
                       ),
                       Container(
                           height: height / 9,
@@ -164,7 +145,8 @@ class MainState extends State<Main> {
                               color: Colors.yellow,
                               border: Border.all(
                                   color: Colors.blueAccent
-                              )
+                              ),
+                              borderRadius: BorderRadius.circular(10)
                           )
                       ),
                       ElevatedButton(
@@ -401,3 +383,4 @@ class MapState extends State<Map> {
   }
 
 }
+
