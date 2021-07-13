@@ -321,6 +321,7 @@ class MapState extends State<Map> {
 
   Completer<GoogleMapController> _controller = Completer();
   List<Marker> markers = [];
+  
 
   @override
   Widget build(BuildContext context) {
@@ -341,16 +342,20 @@ class MapState extends State<Map> {
                 onMapCreated: (GoogleMapController controller) {
                   _controller.complete(controller);
                 },
-                onTap: (LatLng tappedPos) {
+                onTap: (LatLng tappedPos) async {
+
+                  markers = [];
+                  Marker marker = Marker(
+                      markerId: MarkerId(tappedPos.toString()),
+                      position: tappedPos
+                  );
+                  String locationName = await AssistantMethods.getLocationName(marker.position);
+
                   setState(() {
-                    markers = [];
-                    markers.add(
-                        Marker(
-                          markerId: MarkerId(tappedPos.toString()),
-                          position: tappedPos
-                        )
-                    );
+                    markers.add(marker);
+                    widget.callback(widget.locationController, locationName);
                   });
+
                 },
               ),
               Positioned(
@@ -361,19 +366,33 @@ class MapState extends State<Map> {
                     height: height / 4,
                     alignment: Alignment.bottomCenter,
                     color: Colors.white,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        //second arg returns a result
-                        LatLng pos = markers[0].position;
-                        Navigator.pop(context, pos);
-                        widget.callback(widget.locationController, await AssistantMethods.getLocationName(pos));
-
-                      },
-                      child: Text("Done",
-                        style: TextStyle(
-                          fontSize: width * 0.04,
+                    child: Column(
+                      children: [
+                        Text("Pick your current location",
+                            style: TextStyle(
+                                fontSize: width * 0.035
+                            )
                         ),
-                      ),
+                        Text(widget.locationController.text,
+                            style: TextStyle(
+                                fontSize: width * 0.035
+                            )
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            //second arg returns a result
+                            widget.callback(widget.locationController, await AssistantMethods.getLocationName(markers[0].position));
+                            Navigator.pop(context, markers[0].position);
+
+
+                          },
+                          child: Text("Done",
+                            style: TextStyle(
+                              fontSize: width * 0.04,
+                            ),
+                          ),
+                        )
+                      ],
                     )
                   )
               )
