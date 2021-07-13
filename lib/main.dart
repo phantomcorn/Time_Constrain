@@ -335,6 +335,8 @@ class MapState extends State<Map> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
            body: Stack(
              children: [
@@ -360,18 +362,28 @@ class MapState extends State<Map> {
                    });
                  },
                ),
-               SafeArea(
-                   child: Positioned(
-                     child: ElevatedButton(
-                       onPressed: () async {
-                           widget.locationController.text = await AssistantMethods.getLocationName(markers[0].position);
-                           Navigator.pop(context);
-                           widget.callback();
-                       },
-                       child: Text("Done"),
-                     )
-                  )
-               )
+                Positioned(
+                    bottom: 0,
+                    top: height * 0.75,
+                    child: Container(
+                      width: width,
+                      height: height / 4,
+                      alignment: Alignment.bottomCenter,
+                      color: Colors.white,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          widget.locationController.text = await AssistantMethods.getLocationName(markers[0].position);
+                          Navigator.pop(context);
+                          widget.callback();
+                        },
+                        child: Text("Done",
+                          style: TextStyle(
+                            fontSize: width * 0.04,
+                          ),
+                        ),
+                      )
+                    )
+                )
              ],
            )
     );
