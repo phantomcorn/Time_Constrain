@@ -329,7 +329,6 @@ class MapState extends State<Map> {
   @override
   void initState() {
     if (widget.initialPosition != null) {
-      print("initial position");
       markers.add(
           Marker(
             markerId: MarkerId(widget.initialPosition!.toString()),
@@ -353,7 +352,7 @@ class MapState extends State<Map> {
                 tiltGesturesEnabled: true,
                 mapType: MapType.normal,
                 initialCameraPosition: CameraPosition(
-                  target: LatLng(13.7650836, 100.5379664),
+                  target: widget.initialPosition ?? LatLng(13.7650836, 100.5379664),
                   zoom: 16,
                 ),
                 markers: Set.from(markers),
