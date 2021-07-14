@@ -11,7 +11,7 @@ class AssistantMethods {
 
     var response = await RequestAssistant.getRequest(url);
 
-    if (response != "Failed") {
+    if (response != "Failed" && response["status"] == "OK") {
       addr = response["results"][0]["formatted_address"];
     }
 
