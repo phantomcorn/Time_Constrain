@@ -333,7 +333,7 @@ class MapState extends State<DisplayMap> {
     return res;
   }
 
-  Future<LatLng> initCurrentLocation() async {
+  Future<LatLng> getCurrentLocation() async {
 
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -352,7 +352,7 @@ class MapState extends State<DisplayMap> {
 
     var lat = position.latitude;
     var long = position.longitude;
-
+    print(await AssistantMethods.getLocationName(LatLng(lat,long)));
     return LatLng(lat, long);
   }
 
@@ -365,56 +365,63 @@ class MapState extends State<DisplayMap> {
     return Scaffold(
         body: Stack(
           children: [
-              GoogleMap(
-                zoomGesturesEnabled: true,
-                tiltGesturesEnabled: true,
-                mapType: MapType.normal,
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(13.7650836, 100.5379664),
-                  zoom: 16,
-                ),
-                markers: toSet(markers),
-                onMapCreated: (GoogleMapController controller) {
-                  _controller.complete(controller);
-                },
-                onTap: (LatLng tappedPos) async {
+            FutureBuilder(
+              future: getCurrentLocation(),
+              builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
+                print(snapshot.data!);
+                return GoogleMap(
+                  zoomGesturesEnabled: true,
+                  tiltGesturesEnabled: true,
+                  mapType: MapType.normal,
+                  initialCameraPosition: CameraPosition(
+                    target: snapshot.data ?? LatLng(13.7650836, 100.5379664),
+                    zoom: 16,
+                  ),
+                  markers: toSet(markers),
+                  onMapCreated: (GoogleMapController controller) {
+                    _controller.complete(controller);
+                  },
+                  onTap: (LatLng tappedPos) async {
 
-                  Marker marker = Marker(
-                      markerId: MarkerId(tappedPos.toString()),
-                      position: tappedPos
-                  );
+                    Marker marker = Marker(
+                        markerId: MarkerId(tappedPos.toString()),
+                        position: tappedPos
+                    );
 
-                  setState(() {
-                    if (locationDisplayController.page!.toInt() == 1) {
-                      markers[Location.destination] = marker;
-                      dest = tappedPos;
-                    } else {
-                      markers[Location.current] = marker;
-                      curr = tappedPos;
-                    }
-                  });
+                    setState(() {
+                      if (locationDisplayController.page!.toInt() == 1) {
+                        markers[Location.destination] = marker;
+                        dest = tappedPos;
+                      } else {
+                        markers[Location.current] = marker;
+                        curr = tappedPos;
+                      }
+                    });
 
-                },
-              ),
-              Positioned(
-                  bottom: 0,
-                  top: height * 0.75,
-                  child: Container(
-                    width: width,
-                    height: height / 4,
-                    alignment: Alignment.bottomCenter,
-                    color: Colors.white,
-                    child: PageView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      controller: locationDisplayController,
-                      children: [
-                        pickCurr(context),
-                        pickDest(context)
-                      ],
-                    )
+
+                  }
+                );
+              }
+            ),
+            Positioned(
+                bottom: 0,
+                top: height * 0.75,
+                child: Container(
+                  width: width,
+                  height: height / 4,
+                  alignment: Alignment.bottomCenter,
+                  color: Colors.white,
+                  child: PageView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    controller: locationDisplayController,
+                    children: [
+                      pickCurr(context),
+                      pickDest(context)
+                    ],
                   )
-              )
+                )
+            )
          ],
        )
     );
@@ -495,7 +502,7 @@ class MapState extends State<DisplayMap> {
         ),
         ElevatedButton(
           onPressed: () async {
-            if (markers["current"] == null) {
+            if (markers[Location.current] == null) {
               locationDisplayController.animateToPage(0,
                 duration: Duration(milliseconds: 200),
                 curve: Curves.easeInExpo
