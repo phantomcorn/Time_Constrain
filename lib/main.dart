@@ -1,6 +1,7 @@
 
 import 'dart:async';
 
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:time_constraint/AssistantMethods.dart';
@@ -34,16 +35,7 @@ class Main extends StatefulWidget {
 
 class MainState extends State<Main> {
 
-  TextEditingController currController = TextEditingController(text: "Current Location");
-  TextEditingController destController = TextEditingController(text: "Destination");
-  LatLng? curr;
-  LatLng? dest;
-
-  void setLocationName(TextEditingController controller, String value) {
-    setState(() {
-      controller.text = value;
-    });
-  }
+  DisplayMap? map;
 
   @override
   Widget build(BuildContext context) {
@@ -70,20 +62,20 @@ class MainState extends State<Main> {
                           child: Align(alignment: Alignment.center,
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
-                                child :TextButton(
-                                  onPressed: () async {
-                                    curr = await Navigator.push(
+                                child : TextButton(
+                                  onPressed: () {
+                                    if (map == null) {
+                                      map = DisplayMap(tapOnCurrentLocation : true);
+                                    }
+
+                                    Navigator.push(
                                         context,
                                         MaterialPageRoute(builder: (context) =>
-                                            Map(
-                                                positionCallBack: setLocationName,
-                                                locationController: currController,
-                                                initialPos: curr,
-                                            )
+                                          map!
                                         )
                                     );
                                   },
-                                  child: Text(currController.text,
+                                  child: Text("Current location",
                                     style: TextStyle(
                                         fontSize: width * 0.04,
                                         color: Colors.black,
@@ -122,19 +114,19 @@ class MainState extends State<Main> {
                               child: SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child : TextButton(
-                                    onPressed: () async {
-                                      dest = await Navigator.push(
+                                    onPressed: () {
+                                      if (map == null) {
+                                        map = DisplayMap(tapOnCurrentLocation: false);
+                                      }
+
+                                      Navigator.push(
                                           context,
                                           MaterialPageRoute(builder: (context) =>
-                                              Map(
-                                                positionCallBack: setLocationName,
-                                                locationController: destController,
-                                                initialPos: dest,
-                                              )
+                                              map!
                                           )
                                       );
                                     },
-                                    child: Text(destController.text,
+                                    child: Text("Destination",
                                         style: TextStyle(
                                             fontSize: width * 0.04,
                                             color: Colors.black
@@ -151,18 +143,6 @@ class MainState extends State<Main> {
                               borderRadius: BorderRadius.circular(10)
                           )
                       ),
-                      ElevatedButton(
-                          onPressed: () {
-                            print(curr);
-                            print(dest);
-                          },
-                          child: Text("GO!",
-                              style: TextStyle(
-                                  fontSize: width * 0.05,
-                                  color: Colors.black
-                              )
-                          )
-                      )
                     ],
                     mainAxisAlignment: MainAxisAlignment.start,
                   ),
@@ -302,43 +282,79 @@ class _ModeButtonState extends State<ModeButton> {
 
 
 
-class Map extends StatefulWidget {
+class DisplayMap extends StatefulWidget {
 
-  final Function(TextEditingController, String) callback;
-  final TextEditingController locationController;
-  final LatLng? initialPosition;
+  final bool currLocationPage;
 
-  Map({required positionCallBack, required locationController, LatLng? initialPos}) :
-      this.locationController = locationController,
-      this.callback = positionCallBack,
-      initialPosition = initialPos;
+  DisplayMap({required tapOnCurrentLocation}) :
+      currLocationPage = tapOnCurrentLocation;
+
 
 
 
   @override
-  State<Map> createState() => MapState();
+  State<DisplayMap> createState() => MapState();
 
 
 }
 
-class MapState extends State<Map> {
+class MapState extends State<DisplayMap> {
 
   Completer<GoogleMapController> _controller = Completer();
-  List<Marker> markers = [];
-
+  late Map<String, Marker?> markers;
+  late final PageController locationDisplayController;
+  late LatLng curr;
+  late LatLng dest;
+  
   @override
   void initState() {
-    if (widget.initialPosition != null) {
-      markers.add(
-          Marker(
-            markerId: MarkerId(widget.initialPosition!.toString()),
-            position: widget.initialPosition!
-          )
-      );
-
-    }
+    curr = dest = LatLng(0,0);
+    locationDisplayController = PageController(initialPage: widget.currLocationPage ? 0 : 1);
+    markers = {
+      "current" : null,
+      "destination" : null
+    };
     super.initState();
   }
+
+
+  Set<Marker> toSet(Map<String, Marker?> marker) {
+    Set<Marker> res = Set();
+
+    if (marker["current"] != null) {
+      res.add(marker["current"]!);
+    }
+
+    if (marker["destination"] != null) {
+      res.add(marker["destination"]!);
+    }
+    return res;
+  }
+
+  Future<LatLng> initCurrentLocation() async {
+
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error("location services are disabled");
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error("location permissions are denied");
+      }
+    }
+
+    var position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    var lat = position.latitude;
+    var long = position.longitude;
+
+    return LatLng(lat, long);
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -352,25 +368,28 @@ class MapState extends State<Map> {
                 tiltGesturesEnabled: true,
                 mapType: MapType.normal,
                 initialCameraPosition: CameraPosition(
-                  target: widget.initialPosition ?? LatLng(13.7650836, 100.5379664),
+                  target: LatLng(13.7650836, 100.5379664),
                   zoom: 16,
                 ),
-                markers: Set.from(markers),
+                markers: toSet(markers),
                 onMapCreated: (GoogleMapController controller) {
                   _controller.complete(controller);
                 },
                 onTap: (LatLng tappedPos) async {
 
-                  markers = [];
                   Marker marker = Marker(
                       markerId: MarkerId(tappedPos.toString()),
                       position: tappedPos
                   );
-                  String locationName = await AssistantMethods.getLocationName(marker.position);
 
                   setState(() {
-                    markers.add(marker);
-                    widget.callback(widget.locationController, locationName);
+                    if (locationDisplayController.page!.toInt() == 1) {
+                      markers["destination"] = marker;
+                      dest = tappedPos;
+                    } else {
+                      markers["current"] = marker;
+                      curr = tappedPos;
+                    }
                   });
 
                 },
@@ -383,39 +402,111 @@ class MapState extends State<Map> {
                     height: height / 4,
                     alignment: Alignment.bottomCenter,
                     color: Colors.white,
-                    child: Column(
+                    child: PageView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      scrollDirection: Axis.horizontal,
+                      controller: locationDisplayController,
                       children: [
-                        Text("Pick your current location",
-                            style: TextStyle(
-                                fontSize: width * 0.035
-                            )
-                        ),
-                        Text(widget.locationController.text,
-                            style: TextStyle(
-                                fontSize: width * 0.035
-                            )
-                        ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            //second arg returns a result
-                            if (markers.isNotEmpty) {
-                              Navigator.pop(context, markers[0].position);
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          },
-                          child: Text("Done",
-                            style: TextStyle(
-                              fontSize: width * 0.04,
-                            ),
-                          ),
-                        )
+                        pickCurr(context),
+                        pickDest(context)
                       ],
                     )
                   )
               )
          ],
        )
+    );
+  }
+
+  Widget pickCurr(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    return Column(
+      children: [
+        Text("Pick your current location",
+            style: TextStyle(
+                fontSize: width * 0.035
+            )
+        ),
+        FutureBuilder(
+            future: AssistantMethods.getLocationName(curr),
+            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+              if (snapshot.hasData) {
+                return Text(snapshot.data!,
+                    style: TextStyle(
+                        fontSize: width * 0.035
+                    )
+                );
+              } else {
+                return Text("-",
+                    style: TextStyle(
+                        fontSize: width * 0.035
+                    )
+                );
+              }
+            }
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            if (markers["current"] != null) {
+              locationDisplayController.animateToPage(1,
+                  duration: Duration(milliseconds: 200),
+                  curve: Curves.easeInExpo
+              );
+            }
+          },
+          child: Text("Next",
+            style: TextStyle(
+              fontSize: width * 0.04,
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget pickDest(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    return Column(
+      children: [
+        Text("Pick your Destination",
+            style: TextStyle(
+                fontSize: width * 0.035
+            )
+        ),
+        FutureBuilder(
+          future: AssistantMethods.getLocationName(dest),
+          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+            if (snapshot.hasData) {
+              return Text(snapshot.data!,
+                  style: TextStyle(
+                    fontSize: width * 0.035
+                  )
+              );
+            } else {
+              return Text("-",
+                  style: TextStyle(
+                      fontSize: width * 0.035
+                  )
+              );
+            }
+          }
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            if (markers["current"] == null) {
+              locationDisplayController.animateToPage(0,
+                duration: Duration(milliseconds: 200),
+                curve: Curves.easeInExpo
+              );
+            }
+          },
+          child: Text("Next",
+            style: TextStyle(
+              fontSize: width * 0.04,
+            ),
+          ),
+        )
+      ],
     );
   }
 
