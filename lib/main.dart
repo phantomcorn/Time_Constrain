@@ -281,6 +281,10 @@ class _ModeButtonState extends State<ModeButton> {
 }
 
 
+enum Location {
+  current,
+  destination
+}
 
 class DisplayMap extends StatefulWidget {
 
@@ -288,8 +292,6 @@ class DisplayMap extends StatefulWidget {
 
   DisplayMap({required tapOnCurrentLocation}) :
       currLocationPage = tapOnCurrentLocation;
-
-
 
 
   @override
@@ -301,7 +303,7 @@ class DisplayMap extends StatefulWidget {
 class MapState extends State<DisplayMap> {
 
   Completer<GoogleMapController> _controller = Completer();
-  late Map<String, Marker?> markers;
+  late Map<Location, Marker?> markers;
   late final PageController locationDisplayController;
   late LatLng curr;
   late LatLng dest;
@@ -311,22 +313,22 @@ class MapState extends State<DisplayMap> {
     curr = dest = LatLng(0,0);
     locationDisplayController = PageController(initialPage: widget.currLocationPage ? 0 : 1);
     markers = {
-      "current" : null,
-      "destination" : null
+      Location.current : null,
+      Location.destination : null
     };
     super.initState();
   }
 
 
-  Set<Marker> toSet(Map<String, Marker?> marker) {
+  Set<Marker> toSet(Map<Location, Marker?> marker) {
     Set<Marker> res = Set();
 
-    if (marker["current"] != null) {
-      res.add(marker["current"]!);
+    if (marker[Location.current] != null) {
+      res.add(marker[Location.current]!);
     }
 
-    if (marker["destination"] != null) {
-      res.add(marker["destination"]!);
+    if (marker[Location.destination] != null) {
+      res.add(marker[Location.destination]!);
     }
     return res;
   }
@@ -384,10 +386,10 @@ class MapState extends State<DisplayMap> {
 
                   setState(() {
                     if (locationDisplayController.page!.toInt() == 1) {
-                      markers["destination"] = marker;
+                      markers[Location.destination] = marker;
                       dest = tappedPos;
                     } else {
-                      markers["current"] = marker;
+                      markers[Location.current] = marker;
                       curr = tappedPos;
                     }
                   });
@@ -437,7 +439,7 @@ class MapState extends State<DisplayMap> {
                     )
                 );
               } else {
-                return Text("-",
+                return Text("Could not retrieve data from GoogleMaps",
                     style: TextStyle(
                         fontSize: width * 0.035
                     )
@@ -447,7 +449,7 @@ class MapState extends State<DisplayMap> {
         ),
         ElevatedButton(
           onPressed: () async {
-            if (markers["current"] != null) {
+            if (markers[Location.current] != null) {
               locationDisplayController.animateToPage(1,
                   duration: Duration(milliseconds: 200),
                   curve: Curves.easeInExpo
@@ -483,7 +485,7 @@ class MapState extends State<DisplayMap> {
                   )
               );
             } else {
-              return Text("-",
+              return Text("Could not retrieve data from GoogleMaps",
                   style: TextStyle(
                       fontSize: width * 0.035
                   )
