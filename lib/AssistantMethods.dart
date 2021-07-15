@@ -24,10 +24,21 @@ class AssistantMethods {
   static Future<List<PointLatLng>> getRoute(LatLng curr, LatLng dest) async {
 
     PolylinePoints polylinePoints = PolylinePoints();
-    PointLatLng origin = PointLatLng(curr.latitude, curr.longitude);
-    PointLatLng destination = PointLatLng(dest.latitude, dest.longitude);
-    PolylineResult result  = await polylinePoints.getRouteBetweenCoordinates(key, origin, destination);
-    return result.points;
+    String param = "origin=${curr.latitude},${curr.longitude}&destination=${dest.latitude},${dest.longitude}";
+    String url = "https://maps.googleapis.com/maps/api/directions/json?$param&key=$key";
 
+    String polylineCode = "";
+
+    var response = await RequestAssistant.getRequest(url);
+
+    if (response != "Failed" && response["status"] == "OK") {
+      polylineCode = response["routes"][0]["overview_polyline"]["points"];
+    }
+
+    if (polylineCode != "") {
+      return polylinePoints.decodePolyline(polylineCode);
+    }
+
+    return Future.error("No route found");
   }
 }

@@ -555,8 +555,9 @@ class MapState extends State<DisplayMap> {
                 curve: Curves.easeInExpo
               );
             } else {
-              if (markers[Location.destination] != null) {
 
+              if (markers[Location.destination] != null) {
+                
                 var res = await AssistantMethods.getRoute(curr, dest);
 
                 List<LatLng> polylineCoordinates = [];
