@@ -355,6 +355,8 @@ class MapState extends State<DisplayMap> {
   Completer<GoogleMapController> _controller = Completer();
   late Map<Location, Marker?> markers;
   late final PageController locationDisplayController;
+  Set<Polyline> _polylines = {};
+
   late LatLng curr;
   late LatLng dest;
   
@@ -370,7 +372,7 @@ class MapState extends State<DisplayMap> {
   }
 
 
-  Set<Marker> toSet(Map<Location, Marker?> marker) {
+  Set<Marker> markertoSet(Map<Location, Marker?> marker) {
     Set<Marker> res = Set();
 
     if (marker[Location.current] != null) {
@@ -392,7 +394,18 @@ class MapState extends State<DisplayMap> {
     return LatLng(lat, long);
   }
 
+  void setRoute(List<LatLng> polylineCoordinates) {
+    setState(() {
+      _polylines = {};
+      Polyline polyline = Polyline(
+          polylineId: PolylineId("poly"),
+          color: Color.fromARGB(255, 40, 122, 198),
+          points: polylineCoordinates
+      );
 
+      _polylines.add(polyline);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -412,7 +425,8 @@ class MapState extends State<DisplayMap> {
                     target: snapshot.data ?? LatLng(13.7650836, 100.5379664),
                     zoom: 16,
                   ),
-                  markers: toSet(markers),
+                  markers: markertoSet(markers),
+                  polylines: _polylines,
                   onMapCreated: (GoogleMapController controller) {
                     _controller.complete(controller);
                   },
@@ -540,6 +554,21 @@ class MapState extends State<DisplayMap> {
                 duration: Duration(milliseconds: 200),
                 curve: Curves.easeInExpo
               );
+            } else {
+              if (markers[Location.destination] != null) {
+
+                var res = await AssistantMethods.getRoute(curr, dest);
+
+                List<LatLng> polylineCoordinates = [];
+                if (res.isNotEmpty) {
+                  res.forEach((PointLatLng point) {
+                    polylineCoordinates.add(
+                      LatLng(point.latitude, point.longitude));
+                  });
+                }
+
+                setRoute(polylineCoordinates);
+              }
             }
           },
           child: Text("Next",
