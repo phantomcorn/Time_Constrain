@@ -91,28 +91,28 @@ class MainState extends State<Main> {
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
-    return SafeArea(
-        child : Scaffold (
-            body: Center(
-                child: Container(
-                  child: Column(
-                    children: [
-                      Container(
-                        margin: EdgeInsets.only(top : height / 10 , bottom : width / 10),
-                        child: Text("Where to go?",
-                            style: TextStyle(
-                                fontSize: width * 0.06,
-                                color: Colors.black
-                            )
-                        )
-                      ),
-                      Container(
-                          width: width / 1.5,
-                          height: height / 9,
-                          child: Align(alignment: Alignment.center,
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child : TextButton(
+    return Scaffold(
+      body : SafeArea(
+        child: Center(
+            child: Container(
+              child: Column(
+                children: [
+                  Container(
+                      margin: EdgeInsets.only(top : height / 10 , bottom : width / 10),
+                      child: Text("Where to go?",
+                          style: TextStyle(
+                              fontSize: width * 0.06,
+                              color: Colors.black
+                          )
+                      )
+                  ),
+                  Container(
+                      width: width / 1.5,
+                      height: height / 9,
+                      child: Align(alignment: Alignment.center,
+                          child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child : TextButton(
                                   onPressed: () {
                                     if (map == null) {
                                       map = DisplayMap(tapOnCurrentLocation : true);
@@ -121,84 +121,84 @@ class MainState extends State<Main> {
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(builder: (context) =>
-                                          map!
+                                        map!
                                         )
                                     );
                                   },
                                   child: Text("Current location",
                                     style: TextStyle(
-                                        fontSize: width * 0.04,
-                                        color: Colors.black,
+                                      fontSize: width * 0.04,
+                                      color: Colors.black,
                                     ),
                                   )
-                                )
                               )
-                          ),
-                          decoration: BoxDecoration(
-                              color: Colors.red,
-                              border: Border.all(
-                                  color: Colors.blueAccent,
-                              ),
-                              borderRadius: BorderRadius.circular(10)
                           )
                       ),
-                      Container(
-                        width: width / 1.5,
-                        height:  height / 3,
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.zero,
-                        decoration: BoxDecoration(
+                      decoration: BoxDecoration(
+                          color: Colors.red,
                           border: Border.all(
-                            color: Colors.black
+                            color: Colors.blueAccent,
+                          ),
+                          borderRadius: BorderRadius.circular(10)
+                      )
+                  ),
+                  Container(
+                      width: width / 1.5,
+                      height:  height / 3,
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.zero,
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Colors.black
                           )
-                        ),
-                        child: Icon(
+                      ),
+                      child: Icon(
                           Icons.arrow_downward,
                           size: width * 0.6
-                        )
-                      ),
-                      Container(
-                          height: height / 9,
-                          width: width / 1.5,
-                          child: Align(alignment: Alignment.center,
-                              child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child : TextButton(
-                                    onPressed: () {
-                                      if (map == null) {
-                                        map = DisplayMap(tapOnCurrentLocation: false);
-                                      }
+                      )
+                  ),
+                  Container(
+                      height: height / 9,
+                      width: width / 1.5,
+                      child: Align(alignment: Alignment.center,
+                          child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child : TextButton(
+                                onPressed: () {
+                                  if (map == null) {
+                                    map = DisplayMap(tapOnCurrentLocation: false);
+                                  }
 
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) =>
-                                              map!
-                                          )
-                                      );
-                                    },
-                                    child: Text("Destination",
-                                        style: TextStyle(
-                                            fontSize: width * 0.04,
-                                            color: Colors.black
-                                        )
-                                    ),
-                                )
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) =>
+                                      map!
+                                      )
+                                  );
+                                },
+                                child: Text("Destination",
+                                    style: TextStyle(
+                                        fontSize: width * 0.04,
+                                        color: Colors.black
+                                    )
+                                ),
                               )
-                          ),
-                          decoration: BoxDecoration(
-                              color: Colors.yellow,
-                              border: Border.all(
-                                  color: Colors.blueAccent
-                              ),
-                              borderRadius: BorderRadius.circular(10)
                           )
                       ),
-                    ],
-                    mainAxisAlignment: MainAxisAlignment.start,
+                      decoration: BoxDecoration(
+                          color: Colors.yellow,
+                          border: Border.all(
+                              color: Colors.blueAccent
+                          ),
+                          borderRadius: BorderRadius.circular(10)
+                      )
                   ),
-                )
+                ],
+                mainAxisAlignment: MainAxisAlignment.start,
+              ),
             )
         )
+      )
     );
   }
 }
@@ -386,13 +386,15 @@ class MapState extends State<DisplayMap> {
   }
 
   Future<LatLng> getCurrentLocation() async {
-    var position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    var position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best);
 
     var lat = position.latitude;
     var long = position.longitude;
-    print(await AssistantMethods.getLocationName(LatLng(lat,long)));
+
     return LatLng(lat, long);
   }
+
 
   void setRoute(List<LatLng> polylineCoordinates) {
     setState(() {
@@ -417,37 +419,40 @@ class MapState extends State<DisplayMap> {
             FutureBuilder(
               future: getCurrentLocation(),
               builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
-                return GoogleMap(
-                  zoomGesturesEnabled: true,
-                  tiltGesturesEnabled: true,
-                  mapType: MapType.normal,
-                  initialCameraPosition: CameraPosition(
-                    target: snapshot.data ?? LatLng(13.7650836, 100.5379664),
-                    zoom: 16,
-                  ),
-                  markers: markertoSet(markers),
-                  polylines: _polylines,
-                  onMapCreated: (GoogleMapController controller) {
-                    _controller.complete(controller);
-                  },
-                  onTap: (LatLng tappedPos) async {
+                if (snapshot.hasData) {
+                  return GoogleMap(
+                      zoomGesturesEnabled: true,
+                      tiltGesturesEnabled: true,
+                      mapType: MapType.normal,
+                      initialCameraPosition: CameraPosition(
+                        target: snapshot.data!,
+                        zoom: 18,
+                      ),
+                      markers: markertoSet(markers),
+                      polylines: _polylines,
+                      onMapCreated: (GoogleMapController controller) {
+                        _controller.complete(controller);
+                      },
+                      onTap: (LatLng tappedPos) async {
+                        Marker marker = Marker(
+                            markerId: MarkerId(tappedPos.toString()),
+                            position: tappedPos
+                        );
 
-                    Marker marker = Marker(
-                        markerId: MarkerId(tappedPos.toString()),
-                        position: tappedPos
-                    );
-
-                    setState(() {
-                      if (locationDisplayController.page!.toInt() == 1) {
-                        markers[Location.destination] = marker;
-                        dest = tappedPos;
-                      } else {
-                        markers[Location.current] = marker;
-                        curr = tappedPos;
+                        setState(() {
+                          if (locationDisplayController.page!.toInt() == 1) {
+                            markers[Location.destination] = marker;
+                            dest = tappedPos;
+                          } else {
+                            markers[Location.current] = marker;
+                            curr = tappedPos;
+                          }
+                        });
                       }
-                    });
-                  }
-                );
+                  );
+                } else {
+                  return CircularProgressIndicator();
+                }
               }
             ),
             Positioned(
@@ -493,7 +498,7 @@ class MapState extends State<DisplayMap> {
                     )
                 );
               } else {
-                return Text("Could not retrieve data from GoogleMaps",
+                return Text("Fetching data...",
                     style: TextStyle(
                         fontSize: width * 0.035
                     )
@@ -539,7 +544,7 @@ class MapState extends State<DisplayMap> {
                   )
               );
             } else {
-              return Text("Could not retrieve data from GoogleMaps",
+              return Text("Fetching data...",
                   style: TextStyle(
                       fontSize: width * 0.035
                   )
