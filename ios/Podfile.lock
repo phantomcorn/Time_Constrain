@@ -15,7 +15,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
   - google_maps_flutter (from `.symlinks/plugins/google_maps_flutter/ios`)
-
+ 
 SPEC REPOS:
   trunk:
     - GoogleMaps

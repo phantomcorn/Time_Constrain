@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:time_constraint/AssistantMethods.dart';
 
 void main() {
@@ -217,9 +218,9 @@ class ModeButton extends StatefulWidget {
 
 class _ModeButtonState extends State<ModeButton> {
 
-  int modeCounter = 0;
+  static int modeCounter = 0;
   late final List<Widget> mode;
-
+  
   @override
   void initState() {
     mode = [
