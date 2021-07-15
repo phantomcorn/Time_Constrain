@@ -399,7 +399,7 @@ class MapState extends State<DisplayMap> {
       _polylines = {};
       Polyline polyline = Polyline(
           polylineId: PolylineId("poly"),
-          color: Color.fromARGB(255, 40, 122, 198),
+          color: Colors.yellow,
           points: polylineCoordinates
       );
 
@@ -557,7 +557,7 @@ class MapState extends State<DisplayMap> {
             } else {
 
               if (markers[Location.destination] != null) {
-                
+
                 var res = await AssistantMethods.getRoute(curr, dest);
 
                 List<LatLng> polylineCoordinates = [];
