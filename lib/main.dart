@@ -372,7 +372,7 @@ class MapState extends State<DisplayMap> {
   }
 
 
-  Set<Marker> markertoSet(Map<Location, Marker?> marker) {
+  Set<Marker> markerToSet(Map<Location, Marker?> marker) {
     Set<Marker> res = Set();
 
     if (marker[Location.current] != null) {
@@ -428,7 +428,7 @@ class MapState extends State<DisplayMap> {
                         target: snapshot.data!,
                         zoom: 18,
                       ),
-                      markers: markertoSet(markers),
+                      markers: markerToSet(markers),
                       polylines: _polylines,
                       onMapCreated: (GoogleMapController controller) {
                         _controller.complete(controller);
