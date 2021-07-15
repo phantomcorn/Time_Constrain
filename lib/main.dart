@@ -1,6 +1,7 @@
 
 import 'dart:async';
-
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,54 @@ class Main extends StatefulWidget {
 class MainState extends State<Main> {
 
   DisplayMap? map;
+
+  @override
+  void initState() {
+    super.initState();
+    initLocationService().then((isEnabled) {
+      if (!isEnabled) {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return CupertinoAlertDialog(
+                  title : Text("Accept?"),
+                  content: Text("This app requires the use of location service. Please update it in your setting in order to user the app "),
+                  actions: [
+                    CupertinoDialogAction(
+                        child: Text("Yes"),
+                        onPressed: () {
+                          Geolocator.openAppSettings();
+                          Navigator.pop(context);
+                        }
+                    ),
+                    CupertinoDialogAction(child: Text("No"),
+                        onPressed: () => exit(0)
+                    )
+                  ],
+                );
+              }
+          );
+      }
+    });
+  }
+
+  Future<bool> initLocationService() async{
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return false;
+      }
+    } else if (permission == LocationPermission.deniedForever) {
+      return false;
+    }
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -334,20 +383,6 @@ class MapState extends State<DisplayMap> {
   }
 
   Future<LatLng> getCurrentLocation() async {
-
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error("location services are disabled");
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error("location permissions are denied");
-      }
-    }
-
     var position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
     var lat = position.latitude;
@@ -368,7 +403,6 @@ class MapState extends State<DisplayMap> {
             FutureBuilder(
               future: getCurrentLocation(),
               builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
-                print(snapshot.data!);
                 return GoogleMap(
                   zoomGesturesEnabled: true,
                   tiltGesturesEnabled: true,
@@ -397,8 +431,6 @@ class MapState extends State<DisplayMap> {
                         curr = tappedPos;
                       }
                     });
-
-
                   }
                 );
               }
