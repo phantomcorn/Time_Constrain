@@ -332,22 +332,20 @@ class _ModeButtonState extends State<ModeButton> {
 
 
 enum Location {
-  current,
+  origin,
   destination
 }
 
 class DisplayMap extends StatefulWidget {
 
-  final bool currLocationPage;
+  final bool chooseOrigin;
 
   DisplayMap({required tapOnCurrentLocation}) :
-      currLocationPage = tapOnCurrentLocation;
-
-
+      chooseOrigin = tapOnCurrentLocation;
+  
   @override
   State<DisplayMap> createState() => MapState();
-
-
+  
 }
 
 class MapState extends State<DisplayMap> {
@@ -363,9 +361,9 @@ class MapState extends State<DisplayMap> {
   @override
   void initState() {
     curr = dest = LatLng(0,0);
-    locationDisplayController = PageController(initialPage: widget.currLocationPage ? 0 : 1);
+    locationDisplayController = PageController(initialPage: widget.chooseOrigin ? 0 : 1);
     markers = {
-      Location.current : null,
+      Location.origin : null,
       Location.destination : null
     };
     super.initState();
@@ -375,8 +373,8 @@ class MapState extends State<DisplayMap> {
   Set<Marker> markerToSet(Map<Location, Marker?> marker) {
     Set<Marker> res = Set();
 
-    if (marker[Location.current] != null) {
-      res.add(marker[Location.current]!);
+    if (marker[Location.origin] != null) {
+      res.add(marker[Location.origin]!);
     }
 
     if (marker[Location.destination] != null) {
@@ -444,7 +442,7 @@ class MapState extends State<DisplayMap> {
                             markers[Location.destination] = marker;
                             dest = tappedPos;
                           } else {
-                            markers[Location.current] = marker;
+                            markers[Location.origin] = marker;
                             curr = tappedPos;
                           }
                         });
@@ -508,7 +506,7 @@ class MapState extends State<DisplayMap> {
         ),
         ElevatedButton(
           onPressed: () async {
-            if (markers[Location.current] != null) {
+            if (markers[Location.origin] != null) {
               locationDisplayController.animateToPage(1,
                   duration: Duration(milliseconds: 200),
                   curve: Curves.easeInExpo
@@ -554,7 +552,7 @@ class MapState extends State<DisplayMap> {
         ),
         ElevatedButton(
           onPressed: () async {
-            if (markers[Location.current] == null) {
+            if (markers[Location.origin] == null) {
               locationDisplayController.animateToPage(0,
                 duration: Duration(milliseconds: 200),
                 curve: Curves.easeInExpo
@@ -573,7 +571,12 @@ class MapState extends State<DisplayMap> {
                   });
                 }
 
-                setRoute(polylineCoordinates);
+                //setRoute(polylineCoordinates);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                        Info(origin: curr, destination: dest))
+                );
               }
             }
           },
@@ -583,9 +586,121 @@ class MapState extends State<DisplayMap> {
             ),
           ),
         )
-      ],
+      ]
     );
   }
 
 }
 
+class Info extends StatefulWidget {
+
+  final LatLng origin;
+  final LatLng destination;
+
+  Info({required this.origin, required this.destination});
+
+  @override
+  InfoState createState() => InfoState();
+
+}
+
+class InfoState extends State<Info> {
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            children: [
+              CompanyButton(image: "assets/images/grab.png"),
+              SizedBox(height: MediaQuery.of(context).size.height / 25),
+              CompanyButton(image: "assets/images/bolt.png")
+            ],
+            mainAxisAlignment: MainAxisAlignment.center,
+          )
+        )
+      )
+    );
+  }
+
+}
+
+class CompanyButton extends StatefulWidget {
+
+  final String image;
+
+  CompanyButton({required this.image});
+
+  @override
+  CompanyButtonState createState() => CompanyButtonState();
+
+}
+
+class CompanyButtonState extends State<CompanyButton> {
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: MediaQuery.of(context).size.width / 1.1,
+      height: MediaQuery.of(context).size.height / 8,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(
+              color: Colors.black,
+              blurRadius: 1,
+              offset: Offset(0, 2)
+          )]
+      ),
+      child: ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            primary: Colors.white,
+          ),
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    border: Border.all(
+                        color: Colors.blueAccent
+                    )
+                ),
+                child: Image.asset(
+                  widget.image,
+                  fit: BoxFit.cover,
+                )
+              ),
+              Spacer(),
+              Container(
+                decoration: BoxDecoration(
+                    border: Border.all(
+                        color: Colors.blueAccent
+                    )
+                ),
+                child: Column(
+                  children: [
+                    Text("Price: XXX",
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: MediaQuery.of(context).size.width * 0.039
+                      )
+                    ),
+                    Text("ETA: XXX",
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: MediaQuery.of(context).size.width * 0.039
+                      )
+                    )
+                  ],
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                ),
+              )
+            ],
+          )
+      )
+    );
+  }
+
+}
