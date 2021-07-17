@@ -11,7 +11,7 @@ class RequestAssistant {
 
       if (response.statusCode == 200) {
         String jsonData = response.body;
-        var decodeDate = jsonDecode(jsonData);
+        Map<String,dynamic> decodeDate = jsonDecode(jsonData);
         return decodeDate;
 
       } else {
