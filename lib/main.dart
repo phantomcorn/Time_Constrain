@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:time_constraint/AssistantMethods.dart';
+import 'package:time_constraint/Search_BLoC.dart';
 
 void main() {
   runApp(MyApp());
@@ -403,46 +404,29 @@ class MapState extends State<DisplayMap> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    return Scaffold(
-        appBar: AppBar(
-          title : Text("Location"),
-          centerTitle: true,
-          actions: [
-            FutureBuilder(
-                future: AssistantMethods.getSearchLocation(''),
-                builder: (BuildContext context, AsyncSnapshot<List<Map<String,String>>> snapshot) {
-                  if (snapshot.hasData) {
-                    return IconButton(
+    return FutureBuilder(
+        future: AssistantMethods.getCurrentLocation(),
+        builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
+          if (snapshot.hasData) {
+            return Scaffold(
+                appBar: AppBar(
+                  title : Text("Location"),
+                  centerTitle: true,
+                  actions: [
+                    IconButton(
                       icon: Icon(Icons.search),
                       onPressed: () {
                         showSearch(
                             context: context,
-                            delegate: LocationSearch(locations: snapshot.data!)
+                            delegate: LocationSearch(origin : snapshot.data!)
                         );
                       },
-                    );
-                  } else {
-                    return IconButton(
-                      icon: Icon(Icons.search),
-                      onPressed: () {
-                        showSearch(
-                            context: context,
-                            delegate: LocationSearch(locations : [])
-                        );
-                      },
-                    );
-                  }
-                }
-            )
-          ],
-        ),
-        body: Stack(
-          children: [
-            FutureBuilder(
-              future: AssistantMethods.getCurrentLocation(),
-              builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
-                if (snapshot.hasData) {
-                  return GoogleMap(
+                    ),
+                  ],
+                ),
+                body: Stack(
+                  children: [
+                    GoogleMap(
                       zoomGesturesEnabled: true,
                       tiltGesturesEnabled: true,
                       mapType: MapType.normal,
@@ -471,34 +455,35 @@ class MapState extends State<DisplayMap> {
                           }
                         });
                       }
-                  );
-                } else {
-                  return CircularProgressIndicator();
-                }
-              }
-            ),
-            Positioned(
-                bottom: 0,
-                top: height * 0.75,
-                child: Container(
-                  width: width,
-                  height: height / 4,
-                  alignment: Alignment.bottomCenter,
-                  color: Colors.white,
-                  child: PageView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    controller: locationDisplayController,
-                    children: [
-                      pickCurr(context),
-                      pickDest(context)
-                    ],
-                  )
+                    ),
+                    Positioned(
+                        bottom: 0,
+                        top: height * 0.75,
+                        child: Container(
+                            width: width,
+                            height: height / 4,
+                            alignment: Alignment.bottomCenter,
+                            color: Colors.white,
+                            child: PageView(
+                              physics: const NeverScrollableScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              controller: locationDisplayController,
+                              children: [
+                                pickCurr(context),
+                                pickDest(context)
+                              ],
+                            )
+                        )
+                    )
+                  ],
                 )
-            )
-         ],
-       )
+            );
+          } else {
+            return CircularProgressIndicator();
+          }
+        }
     );
+
   }
 
   Widget pickCurr(BuildContext context) {
@@ -619,9 +604,11 @@ class MapState extends State<DisplayMap> {
 
 class LocationSearch extends SearchDelegate<LatLng?> {
 
-  List<Map<String,String>> locations;
+  final _bloc;
+  LatLng origin;
 
-  LocationSearch({required this.locations});
+  LocationSearch({required this.origin}) :
+      _bloc = SearchBloc(origin : origin);
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -652,25 +639,43 @@ class LocationSearch extends SearchDelegate<LatLng?> {
   @override
   Widget buildResults(BuildContext context) {
 
-    final List<Map<String,String>> searchedLocation = locations.where(
-            (Map<String,String> location) => location["name"]!.toLowerCase().contains(
-                query.toLowerCase()
-            )
-      ).toList();
+    _bloc.searchEventSink.add(QueryChangeEvent(query: query));
 
-    return ListView.builder(
-        itemCount: searchedLocation.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(searchedLocation[index]["name"]!),
-            subtitle: Text(searchedLocation[index]["address"]!),
-            onTap: () {
-              close(context, LatLng(double.parse(searchedLocation[index]["lat"]!), double.parse(searchedLocation[index]["lng"]!)));
-            },
-          );
+    return StreamBuilder<List<Map<String,String>>>(
+      stream: _bloc.searchLocation,
+      initialData: [],
+      builder: (BuildContext context, AsyncSnapshot<List<Map<String,String>>> snapshot) {
+          if (snapshot.hasData) {
+            var result = snapshot.data;
+            if (result!.isEmpty) {
+              return Column(
+                children: <Widget>[
+                  Text(
+                    "No Results Found.",
+                  ),
+                ],
+              );
+            } else {
+              return ListView.builder(
+                  itemCount: result.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(result[index]["name"]!),
+                      subtitle: Text(result[index]["address"]!),
+                      onTap: () {
+                        close(context, LatLng(
+                            double.parse(result[index]["lat"]!),
+                            double.parse(result[index]["lng"]!)));
+                      },
+                    );
+                  }
+              );
+            }
+          } else {
+            return CircularProgressIndicator();
+          }
         }
-    );
-
+      );
 
   }
 
