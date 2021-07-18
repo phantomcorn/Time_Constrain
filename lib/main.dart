@@ -383,15 +383,7 @@ class MapState extends State<DisplayMap> {
     return res;
   }
 
-  Future<LatLng> getCurrentLocation() async {
-    var position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best);
 
-    var lat = position.latitude;
-    var long = position.longitude;
-
-    return LatLng(lat, long);
-  }
 
 
   void setRoute(List<LatLng> polylineCoordinates) {
@@ -412,10 +404,42 @@ class MapState extends State<DisplayMap> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
+        appBar: AppBar(
+          title : Text("Location"),
+          centerTitle: true,
+          actions: [
+            FutureBuilder(
+                future: AssistantMethods.getSearchLocation(''),
+                builder: (BuildContext context, AsyncSnapshot<List<Map<String,String>>> snapshot) {
+                  if (snapshot.hasData) {
+                    return IconButton(
+                      icon: Icon(Icons.search),
+                      onPressed: () {
+                        showSearch(
+                            context: context,
+                            delegate: LocationSearch(locations: snapshot.data!)
+                        );
+                      },
+                    );
+                  } else {
+                    return IconButton(
+                      icon: Icon(Icons.search),
+                      onPressed: () {
+                        showSearch(
+                            context: context,
+                            delegate: LocationSearch(locations : [])
+                        );
+                      },
+                    );
+                  }
+                }
+            )
+          ],
+        ),
         body: Stack(
           children: [
             FutureBuilder(
-              future: getCurrentLocation(),
+              future: AssistantMethods.getCurrentLocation(),
               builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
                 if (snapshot.hasData) {
                   return GoogleMap(
@@ -590,6 +614,71 @@ class MapState extends State<DisplayMap> {
     );
   }
 
+}
+
+
+class LocationSearch extends SearchDelegate<LatLng?> {
+
+  List<Map<String,String>> locations;
+
+  LocationSearch({required this.locations});
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          if (query.isEmpty) {
+            close(context, null);
+          } else {
+            query = '';
+          }
+        }
+      )
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      }
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+
+    final List<Map<String,String>> searchedLocation = locations.where(
+            (Map<String,String> location) => location["name"]!.toLowerCase().contains(
+                query.toLowerCase()
+            )
+      ).toList();
+
+    return ListView.builder(
+        itemCount: searchedLocation.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(searchedLocation[index]["name"]!),
+            subtitle: Text(searchedLocation[index]["address"]!),
+            onTap: () {
+              close(context, LatLng(double.parse(searchedLocation[index]["lat"]!), double.parse(searchedLocation[index]["lng"]!)));
+            },
+          );
+        }
+    );
+
+
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return buildResults(context);
+  }
+  
 }
 
 class Info extends StatefulWidget {
