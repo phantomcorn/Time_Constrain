@@ -55,22 +55,19 @@ class AssistantMethods {
     return Future.error("No route found");
   }
 
-  static Future<List<Map<String,String>>> getSearchLocation(String search) async {
+  static Future<List<Map<String,String>>> getSearchLocation(String search, LatLng current) async {
 
     List<Map<String,String>> locations = [];
+    String searchForUrl = search;
 
-    LatLng current = await getCurrentLocation();
-    String param = "key=$key&location=${current.latitude},${current.longitude}";
-    String optional;
-
-    if (search == '') {
-      optional = "rankby=distance";
-    } else {
-      optional = "rankby=distance&keyword=$search";
+    if (search.contains(" ")) {
+      searchForUrl = search.replaceAll(RegExp(r"\s+"), "+");
     }
 
-    String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?$param&$optional";
+    String param = "key=$key&location=${current.latitude},${current.longitude}";
+    String optional = "rankby=distance&keyword=$searchForUrl";
 
+    String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?$param&$optional";
     var response = await RequestAssistant.getRequest(url);
     if (response != "Failed" && response["status"] == "OK") {
       List<dynamic> results = response["results"];
