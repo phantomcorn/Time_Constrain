@@ -646,8 +646,13 @@ class LocationSearch extends SearchDelegate<LatLng?> {
       initialData: [],
       builder: (BuildContext context, AsyncSnapshot<List<Map<String,String>>> snapshot) {
           if (snapshot.hasData) {
-            var result = snapshot.data;
-            if (result!.isEmpty) {
+            var filteredResults = snapshot.data!.where(
+                    (Map<String,String> location) => location["name"]!.toLowerCase().contains(
+                    query.toLowerCase()
+                )
+            ).toList();
+
+            if (filteredResults.isEmpty) {
               return Column(
                 children: <Widget>[
                   Text(
@@ -657,15 +662,15 @@ class LocationSearch extends SearchDelegate<LatLng?> {
               );
             } else {
               return ListView.builder(
-                  itemCount: result.length,
+                  itemCount: filteredResults.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      title: Text(result[index]["name"]!),
-                      subtitle: Text(result[index]["address"]!),
+                      title: Text(filteredResults[index]["name"]!),
+                      subtitle: Text(filteredResults[index]["address"]!),
                       onTap: () {
                         close(context, LatLng(
-                            double.parse(result[index]["lat"]!),
-                            double.parse(result[index]["lng"]!)));
+                            double.parse(filteredResults[index]["lat"]!),
+                            double.parse(filteredResults[index]["lng"]!)));
                       },
                     );
                   }
