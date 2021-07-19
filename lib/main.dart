@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/rendering.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
@@ -384,7 +385,22 @@ class MapState extends State<DisplayMap> {
     return res;
   }
 
+  void addMarkerToMap(LatLng pos) {
+    Marker marker = Marker(
+        markerId: MarkerId(pos.toString()),
+        position: pos
+    );
 
+    setState(() {
+      if (locationDisplayController.page!.toInt() == 1) {
+        markers[Location.destination] = marker;
+        dest = pos;
+      } else {
+        markers[Location.origin] = marker;
+        curr = pos;
+      }
+    });
+  }
 
 
   void setRoute(List<LatLng> polylineCoordinates) {
@@ -415,11 +431,15 @@ class MapState extends State<DisplayMap> {
                   actions: [
                     IconButton(
                       icon: Icon(Icons.search),
-                      onPressed: () {
-                        showSearch(
+                      onPressed: () async {
+                        final pickedLocation = await showSearch(
                             context: context,
                             delegate: LocationSearch(origin : snapshot.data!)
                         );
+
+                        if (pickedLocation != null) {
+                          addMarkerToMap(pickedLocation);
+                        }
                       },
                     ),
                   ],
@@ -440,20 +460,7 @@ class MapState extends State<DisplayMap> {
                         _controller.complete(controller);
                       },
                       onTap: (LatLng tappedPos) async {
-                        Marker marker = Marker(
-                            markerId: MarkerId(tappedPos.toString()),
-                            position: tappedPos
-                        );
-
-                        setState(() {
-                          if (locationDisplayController.page!.toInt() == 1) {
-                            markers[Location.destination] = marker;
-                            dest = tappedPos;
-                          } else {
-                            markers[Location.origin] = marker;
-                            curr = tappedPos;
-                          }
-                        });
+                        addMarkerToMap(tappedPos);
                       }
                     ),
                     Positioned(
