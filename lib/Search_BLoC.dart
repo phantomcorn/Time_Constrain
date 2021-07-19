@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:time_constraint/AssistantMethods.dart';
 
@@ -11,9 +12,24 @@ class QueryChangeEvent {
   QueryChangeEvent({required this.query});
 }
 
+class Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds});
+
+  run(VoidCallback action) {
+    if (null != _timer) {
+      _timer!.cancel();
+    }
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+}
+
 class SearchBloc {
 
   final LatLng origin;
+  late final Debouncer _debouncer;
 
   final _searchStateController = StreamController<List<Map<String,String>>>();
   StreamSink<List<Map<String,String>>> get _inLocations => _searchStateController.sink;
@@ -26,22 +42,19 @@ class SearchBloc {
 
   SearchBloc({required this.origin}) {
     _searchEventController.stream.listen(_mapEventToState);
+    _debouncer = Debouncer(milliseconds: 1500);
   }
   
   void _mapEventToState(QueryChangeEvent event) {
 
-    AssistantMethods.getSearchLocation(event.query, origin).then((List<Map<String,String>> results) {
+    _debouncer.run(() {
+      print(event.query);
+      AssistantMethods.getSearchLocation(event.query, origin).then((List<Map<String,String>> results) {
 
-        final List<Map<String,String>> filteredResults = results.where(
-                (Map<String,String> location) => location["name"]!.toLowerCase().contains(
-                event.query.toLowerCase()
-            )
-        ).toList();
+        _inLocations.add(results);
 
-        _inLocations.add(filteredResults);
-
-      }
-    );
+      });
+    });
   }
 
   void dispose() {
