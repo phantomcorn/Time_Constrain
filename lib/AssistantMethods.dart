@@ -8,6 +8,7 @@ class AssistantMethods {
 
   static String key = "AIzaSyCX5sutODXIcV4NT5gQwHOkYAjW-ZRbweo";
   static const maxRes = 20;
+  static LatLng? currentLocation;
 
   static Future<LatLng> getCurrentLocation() async {
     var position = await Geolocator.getCurrentPosition(
@@ -55,7 +56,11 @@ class AssistantMethods {
     return Future.error("No route found");
   }
 
-  static Future<List<Map<String,String>>> getSearchLocation(String search, LatLng current) async {
+  static Future<List<Map<String,String>>> getSearchLocation(String search) async {
+
+    if (currentLocation == null) {
+      currentLocation = await getCurrentLocation();
+    }
 
     List<Map<String,String>> locations = [];
     String searchForUrl = search;
@@ -63,8 +68,8 @@ class AssistantMethods {
     if (search.contains(" ")) {
       searchForUrl = search.replaceAll(RegExp(r"\s+"), "+");
     }
-
-    String param = "key=$key&location=${current.latitude},${current.longitude}";
+    
+    String param = "key=$key&location=${currentLocation!.latitude},${currentLocation!.longitude}";
     String optional = "rankby=distance&keyword=$searchForUrl";
 
     String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?$param&$optional";
