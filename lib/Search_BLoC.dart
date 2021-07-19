@@ -12,6 +12,8 @@ class QueryChangeEvent {
   QueryChangeEvent({required this.query});
 }
 
+//Debouncer creds to : https://medium.com/fabcoding/implementing-search-in-flutter-delay-search-while-typing-8508ea4004c6
+
 class Debouncer {
   final int milliseconds;
   Timer? _timer;
