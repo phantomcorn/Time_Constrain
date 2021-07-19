@@ -420,33 +420,33 @@ class MapState extends State<DisplayMap> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-    return FutureBuilder(
-        future: AssistantMethods.getCurrentLocation(),
-        builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
-          if (snapshot.hasData) {
-            return Scaffold(
-                appBar: AppBar(
-                  title : Text("Location"),
-                  centerTitle: true,
-                  actions: [
-                    IconButton(
-                      icon: Icon(Icons.search),
-                      onPressed: () async {
-                        final pickedLocation = await showSearch(
-                            context: context,
-                            delegate: LocationSearch(origin : snapshot.data!)
-                        );
+    return Scaffold(
+        appBar: AppBar(
+          title : Text("Location"),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () async {
+                final pickedLocation = await showSearch(
+                    context: context,
+                    delegate: LocationSearch()
+                );
 
-                        if (pickedLocation != null) {
-                          addMarkerToMap(pickedLocation);
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                body: Stack(
-                  children: [
-                    GoogleMap(
+                if (pickedLocation != null) {
+                  addMarkerToMap(pickedLocation);
+                }
+              },
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            FutureBuilder(
+              future: AssistantMethods.getCurrentLocation(),
+              builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
+                if (snapshot.hasData) {
+                  return GoogleMap(
                       zoomGesturesEnabled: true,
                       tiltGesturesEnabled: true,
                       mapType: MapType.normal,
@@ -462,35 +462,34 @@ class MapState extends State<DisplayMap> {
                       onTap: (LatLng tappedPos) async {
                         addMarkerToMap(tappedPos);
                       }
-                    ),
-                    Positioned(
-                        bottom: 0,
-                        top: height * 0.75,
-                        child: Container(
-                            width: width,
-                            height: height / 4,
-                            alignment: Alignment.bottomCenter,
-                            color: Colors.white,
-                            child: PageView(
-                              physics: const NeverScrollableScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
-                              controller: locationDisplayController,
-                              children: [
-                                pickCurr(context),
-                                pickDest(context)
-                              ],
-                            )
-                        )
+                  );
+                } else {
+                  return CircularProgressIndicator();
+                }
+              }
+            ),
+            Positioned(
+                bottom: 0,
+                top: height * 0.75,
+                child: Container(
+                    width: width,
+                    height: height / 4,
+                    alignment: Alignment.bottomCenter,
+                    color: Colors.white,
+                    child: PageView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      scrollDirection: Axis.horizontal,
+                      controller: locationDisplayController,
+                      children: [
+                        pickCurr(context),
+                        pickDest(context)
+                      ],
                     )
-                  ],
                 )
-            );
-          } else {
-            return CircularProgressIndicator();
-          }
-        }
+            )
+          ],
+        )
     );
-
   }
 
   Widget pickCurr(BuildContext context) {
@@ -612,10 +611,9 @@ class MapState extends State<DisplayMap> {
 class LocationSearch extends SearchDelegate<LatLng?> {
 
   final _bloc;
-  LatLng origin;
 
-  LocationSearch({required this.origin}) :
-      _bloc = SearchBloc(origin : origin);
+  LocationSearch() :
+      _bloc = SearchBloc();
 
   @override
   List<Widget> buildActions(BuildContext context) {

@@ -68,7 +68,7 @@ class AssistantMethods {
     if (search.contains(" ")) {
       searchForUrl = search.replaceAll(RegExp(r"\s+"), "+");
     }
-    
+
     String param = "key=$key&location=${currentLocation!.latitude},${currentLocation!.longitude}";
     String optional = "rankby=distance&keyword=$searchForUrl";
 
