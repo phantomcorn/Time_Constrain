@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:time_constraint/AssistantMethods.dart';
 
-//creds : https://www.youtube.com/watch?v=oxeYeMHVLII
+//BLoC creds : https://www.youtube.com/watch?v=oxeYeMHVLII
 
 class QueryChangeEvent {
 
@@ -30,7 +29,6 @@ class Debouncer {
 
 class SearchBloc {
 
-  final LatLng origin;
   late final Debouncer _debouncer;
 
   final _searchStateController = StreamController<List<Map<String,String>>>();
@@ -42,7 +40,7 @@ class SearchBloc {
 
   Sink<QueryChangeEvent> get searchEventSink => _searchEventController.sink;
 
-  SearchBloc({required this.origin}) {
+  SearchBloc() {
     _searchEventController.stream.listen(_mapEventToState);
     _debouncer = Debouncer(milliseconds: 1500);
   }
@@ -50,8 +48,7 @@ class SearchBloc {
   void _mapEventToState(QueryChangeEvent event) {
 
     _debouncer.run(() {
-      print(event.query);
-      AssistantMethods.getSearchLocation(event.query, origin).then((List<Map<String,String>> results) {
+      AssistantMethods.getSearchLocation(event.query).then((List<Map<String,String>> results) {
 
         _inLocations.add(results);
 
