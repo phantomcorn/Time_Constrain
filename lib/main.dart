@@ -424,6 +424,7 @@ class MapState extends State<DisplayMap> {
         appBar: AppBar(
           title : Text("Location"),
           centerTitle: true,
+          backgroundColor: Colors.red,
           actions: [
             IconButton(
               icon: Icon(Icons.search),
@@ -538,6 +539,9 @@ class MapState extends State<DisplayMap> {
           )
         ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.red
+          ),
           onPressed: () async {
             if (markers[Location.origin] != null) {
               locationDisplayController.animateToPage(1,
@@ -603,6 +607,9 @@ class MapState extends State<DisplayMap> {
             )
         ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.red
+          ),
           onPressed: () async {
             if (markers[Location.origin] == null) {
               locationDisplayController.animateToPage(0,
