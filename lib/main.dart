@@ -470,10 +470,9 @@ class MapState extends State<DisplayMap> {
             ),
             Positioned(
                 bottom: 0,
-                top: height * 0.75,
+                width: width,
+                height: height * 0.22,
                 child: Container(
-                    width: width,
-                    height: height / 4,
                     alignment: Alignment.bottomCenter,
                     color: Colors.white,
                     child: PageView(
@@ -483,7 +482,7 @@ class MapState extends State<DisplayMap> {
                       children: [
                         pickCurr(context),
                         pickDest(context)
-                      ],
+                      ]
                     )
                 )
             )
@@ -496,28 +495,47 @@ class MapState extends State<DisplayMap> {
     double width = MediaQuery.of(context).size.width;
     return Column(
       children: [
-        Text("Pick your current location",
-            style: TextStyle(
-                fontSize: width * 0.035
-            )
+        Container(
+          margin: EdgeInsets.only(top: width / 30, bottom: width / 30),
+          child: Text("Pick your current location",
+              style: TextStyle(
+                fontSize: width * 0.04,
+              )
+          )
         ),
-        FutureBuilder(
-            future: AssistantMethods.getLocationName(curr),
-            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-              if (snapshot.hasData) {
-                return Text(snapshot.data!,
-                    style: TextStyle(
-                        fontSize: width * 0.035
-                    )
-                );
-              } else {
-                return Text("Fetching data...",
-                    style: TextStyle(
-                        fontSize: width * 0.035
-                    )
-                );
+        Container(
+          width: width/ 1.1,
+          height: width / 8,
+          margin: EdgeInsets.only(bottom: width / 30),
+          padding: EdgeInsets.all(width / 35),
+          child: FutureBuilder(
+              future: AssistantMethods.getLocationName(curr),
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                if (snapshot.hasData) {
+                  return SingleChildScrollView(
+                    child: Text(snapshot.data!,
+                        style: TextStyle(
+                            fontSize: width * 0.035
+                        )
+                    ),
+                    scrollDirection: Axis.horizontal,
+                  );
+                } else {
+                  return Text("Fetching data...",
+                      style: TextStyle(
+                          fontSize: width * 0.035
+                      )
+                  );
+                }
               }
-            }
+          ),
+          decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.red,
+                width: 3
+              ),
+              borderRadius: BorderRadius.circular(8)
+          )
         ),
         ElevatedButton(
           onPressed: () async {
@@ -542,28 +560,47 @@ class MapState extends State<DisplayMap> {
     double width = MediaQuery.of(context).size.width;
     return Column(
       children: [
-        Text("Pick your Destination",
-            style: TextStyle(
-                fontSize: width * 0.035
+        Container(
+            margin: EdgeInsets.only(top: width / 30, bottom: width / 30),
+            child: Text("Pick your Destination",
+                style: TextStyle(
+                  fontSize: width * 0.04,
+                )
             )
         ),
-        FutureBuilder(
-          future: AssistantMethods.getLocationName(dest),
-          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-            if (snapshot.hasData) {
-              return Text(snapshot.data!,
-                  style: TextStyle(
-                    fontSize: width * 0.035
-                  )
-              );
-            } else {
-              return Text("Fetching data...",
-                  style: TextStyle(
-                      fontSize: width * 0.035
-                  )
-              );
-            }
-          }
+        Container(
+            width: width / 1.1,
+            height: width / 8,
+            margin: EdgeInsets.only(bottom: width / 30),
+            padding: EdgeInsets.all(width / 35),
+            child: FutureBuilder(
+                future: AssistantMethods.getLocationName(dest),
+                builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  if (snapshot.hasData) {
+                    return SingleChildScrollView(
+                      child: Text(snapshot.data!,
+                          style: TextStyle(
+                              fontSize: width * 0.035
+                          )
+                      ),
+                      scrollDirection: Axis.horizontal,
+                    );
+                  } else {
+                    return Text("Fetching data...",
+                        style: TextStyle(
+                            fontSize: width * 0.035
+                        )
+                    );
+                  }
+                }
+            ),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    color: Colors.red,
+                    width: 3
+                ),
+                borderRadius: BorderRadius.circular(8)
+            )
         ),
         ElevatedButton(
           onPressed: () async {
