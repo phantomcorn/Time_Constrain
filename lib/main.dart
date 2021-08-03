@@ -355,7 +355,7 @@ class MapState extends State<DisplayMap> {
   Completer<GoogleMapController> _controller = Completer();
   late Map<Location, Marker?> markers;
   late final PageController locationDisplayController;
-  Set<Polyline> _polylines = {};
+  //Set<Polyline> _polylines = {};
 
   late LatLng curr;
   late LatLng dest;
@@ -402,7 +402,7 @@ class MapState extends State<DisplayMap> {
     });
   }
 
-
+/*
   void setRoute(List<LatLng> polylineCoordinates) {
     setState(() {
       _polylines = {};
@@ -415,6 +415,8 @@ class MapState extends State<DisplayMap> {
       _polylines.add(polyline);
     });
   }
+
+ */
 
   @override
   Widget build(BuildContext context) {
@@ -441,51 +443,50 @@ class MapState extends State<DisplayMap> {
             ),
           ],
         ),
-        body: Stack(
+        body: Column(
           children: [
-            FutureBuilder(
-              future: AssistantMethods.getCurrentLocation(),
-              builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
-                if (snapshot.hasData) {
-                  return GoogleMap(
-                      zoomGesturesEnabled: true,
-                      tiltGesturesEnabled: true,
-                      mapType: MapType.normal,
-                      initialCameraPosition: CameraPosition(
-                        target: snapshot.data!,
-                        zoom: 18,
-                      ),
-                      markers: markerToSet(markers),
-                      polylines: _polylines,
-                      onMapCreated: (GoogleMapController controller) {
-                        _controller.complete(controller);
-                      },
-                      onTap: (LatLng tappedPos) async {
-                        addMarkerToMap(tappedPos);
+            Expanded(
+              child: Container(
+                  child : FutureBuilder(
+                      future: AssistantMethods.getCurrentLocation(),
+                      builder: (BuildContext context, AsyncSnapshot<LatLng> snapshot) {
+                        if (snapshot.hasData) {
+                          return GoogleMap(
+                              zoomGesturesEnabled: true,
+                              tiltGesturesEnabled: true,
+                              mapType: MapType.normal,
+                              initialCameraPosition: CameraPosition(
+                                target: snapshot.data!,
+                                zoom: 18,
+                              ),
+                              markers: markerToSet(markers),
+                              //polylines: _polylines,
+                              onMapCreated: (GoogleMapController controller) {
+                                _controller.complete(controller);
+                              },
+                              onTap: (LatLng tappedPos) async {
+                                addMarkerToMap(tappedPos);
+                              }
+                          );
+                        } else {
+                          return CircularProgressIndicator();
+                        }
                       }
-                  );
-                } else {
-                  return CircularProgressIndicator();
-                }
-              }
+                  )
+              )
             ),
-            Positioned(
-                bottom: 0,
-                width: width,
-                height: height * 0.22,
-                child: Container(
-                    alignment: Alignment.bottomCenter,
-                    color: Colors.white,
-                    child: PageView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      controller: locationDisplayController,
-                      children: [
-                        pickCurr(context),
-                        pickDest(context)
-                      ]
-                    )
-                )
+            Container(
+              height : height * 0.22,
+              color: Colors.white,
+              child: PageView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  controller: locationDisplayController,
+                  children: [
+                    pickCurr(context),
+                    pickDest(context)
+                  ]
+              )
             )
           ],
         )
